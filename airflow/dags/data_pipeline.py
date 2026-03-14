@@ -3,6 +3,8 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from datetime import datetime, timedelta
+# Import the slack alert function from the custom plugin
+from slack_operator import task_fail_slack_alert
 
 # Default arguments for the DAG
 default_args = {
@@ -13,6 +15,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 2,
     'retry_delay': timedelta(minutes=5),
+    'on_failure_callback': task_fail_slack_alert,
 }
 
 # Define the DAG
