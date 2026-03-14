@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: fct_campaign_performance
+    description: "Daily fact table detailing campaign performance metrics, including spend, conversions, and ROAS."
+    columns:
+      - name: campaign_id
+        description: "Unique identifier for the marketing campaign."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_marketing__campaigns')
+              field: campaign_id
+
+      - name: date_day
+        description: "The date of the performance record."
+        tests:
+          - not_null
+
+      - name: daily_spend
+        description: "Total amount spent on the campaign for the given day."
+        tests:
+          - not_null
+
+      - name: roas
+        description: "Return on Ad Spend (ROAS) for the campaign on the given day."
+        tests:
+          - not_null:
+              severity: warn
