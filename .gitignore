@@ -1,0 +1,36 @@
+# .gitignore - Standard Python/dbt project exclusions
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS-specific exclusions
+.DS_Store
+Thumbs.db
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.env
+
+# dbt specific exclusions
+target/
+dbt_packages/
+dbt_modules/
+logs/
+
+# Airflow specific exclusions
+airflow_home/
+*.db
+*.log
+
+# Sensitive credentials (never commit these!)
+.snowflake_credentials
+profiles.yml
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
