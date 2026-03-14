@@ -15,6 +15,11 @@ snowflake-connector-python[pandas]>=3.0.0
 pytest>=7.0.0
 pytest-cov>=4.0.0
 pandas>=2.0.0
+dbt-expectations>=0.10.1
+dbt-utils>=1.1.0
+
+# slack notifications
+slack_sdk>=3.0.0
 
 # environment and secrets
 python-dotenv>=1.0.0
