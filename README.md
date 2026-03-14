@@ -1,22 +1,51 @@
-# Modern Data Analytics Pipeline
+# Modern Data Analytics Pipeline (Data Mesh Foundation)
 
 ## Architecture Overview
 
-This project implements a highly professional, enterprise-grade data analytics pipeline designed for scalability, reliability, and data quality. The architecture leverages the industry-standard **Modern Data Stack (MDS)**:
+This project implements a highly professional, enterprise-grade data analytics pipeline designed for scalability, reliability, and data quality. The architecture leverages a **Data Mesh Foundation** approach with modular domains and robust governance:
 
-- **Snowflake**: The primary Cloud Data Warehouse, serving as the centralized source of truth. It utilizes role-based access control (RBAC) and isolated compute resources (warehouses) for optimal performance and security.
-- **dbt (data build tool)**: Handles the "Transform" layer of the ELT process. It uses modular SQL to transform raw data into high-quality analytics-ready datasets, employing best practices such as version control, documentation, and automated testing.
-- **Apache Airflow**: The orchestration engine responsible for scheduling and managing end-to-end data workflows, ensuring dependencies are respected and providing robust monitoring and alerting.
+```mermaid
+graph TD
+    subgraph "Ingestion Layer"
+        S1[External APIs] -->|ETL/ELT| RAW[(Snowflake RAW)]
+        S2[Transactional DBs] -->|CDC| RAW
+    end
 
-### Data Flow
+    subgraph "Transformation Layer (dbt)"
+        RAW --> STG[Staging Models]
+        STG --> INT[Intermediate Models]
+        INT --> MART[Analytics Marts]
+    end
 
-1. **Extract & Load (EL)**: Raw data is ingested into Snowflake's `RAW` database from various sources (not covered in this repo's initialization but part of the broader strategy).
-2. **Transform (T)**:
-   - **Staging Layer**: Clean and rename raw data.
-   - **Intermediate Layer**: Complex joins and business logic.
-   - **Marts Layer**: Final, business-ready models optimized for consumption (e.g., `fct_campaign_performance`).
-3. **Validation**: Automated tests run at every stage (dbt tests and custom quality checks) to ensure data integrity.
-4. **Orchestration**: Airflow triggers dbt jobs and potentially other tasks (e.g., data quality checks, external API calls).
+    subgraph "Orchestration & Quality"
+        AF[Apache Airflow] -->|Schedules| STG
+        AF -->|Triggers| INT
+        AF -->|Validates| MART
+        DQ[dbt-expectations] -->|Tests| STG
+        DQ -->|Tests| MART
+        SLACK[Slack Alerts] -.->|Notify| AF
+    end
+
+    subgraph "CI/CD (GitHub Actions)"
+        GH[GitHub Actions] -->|Lint/Test| AF
+        GH -->|Parse/Verify| Transformation
+    end
+```
+
+### Data Lineage
+
+The pipeline follows a strict multi-layer transformation strategy:
+1.  **Source (RAW)**: Landing zone for immutable raw data.
+2.  **Staging (STG)**: Surgical cleaning, renaming, and type casting. Models are named `stg_<source>_<entity>.sql`.
+3.  **Intermediate (INT)**: Complex business logic, cross-model joins, and heavy transformations. Models are named `int_<domain>_<logic>.sql`.
+4.  **Marts (MART)**: Denormalized, user-facing tables optimized for BI tools (e.g., Tableau, Looker). Models are named `fct_<entity>.sql` or `dim_<entity>.sql`.
+
+## CI/CD Strategy
+
+Automated validation is enforced via GitHub Actions:
+- **Linting**: SQL (sqlfluff) and Python (flake8) linting to ensure code consistency.
+- **Validation**: `dbt parse` to catch syntax and dependency errors before deployment.
+- **Testing**: Automated Python unit tests for custom operators and dbt logic.
 
 ## Project Structure
 
